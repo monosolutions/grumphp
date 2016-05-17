@@ -33,13 +33,15 @@ class Codeception extends AbstractExternalTask
             'config_file' => null,
             'suite' => null,
             'test'  => null,
-            'fail_fast' => false
+            'fail_fast' => false,
+            'skip_suites' => null,
         ));
 
         $resolver->addAllowedTypes('config_file', array('null', 'string'));
         $resolver->addAllowedTypes('suite', array('null', 'string'));
         $resolver->addAllowedTypes('test', array('null', 'string'));
         $resolver->addAllowedTypes('fail_fast', array('bool'));
+        $resolver->addAllowedTypes('skip_suites', array('null', 'string', 'array'));
 
         return $resolver;
     }
@@ -70,7 +72,15 @@ class Codeception extends AbstractExternalTask
         $arguments->addOptionalArgument('--fail-fast', $config['fail_fast']);
         $arguments->addOptionalArgument('%s', $config['suite']);
         $arguments->addOptionalArgument('%s', $config['test']);
-
+        if ($config['skip_suites']) {
+            if (is_array($config['skip_suites'])) {
+                foreach ($config['skip_suites'] as $skippedSuite) {
+                    $arguments->addOptionalArgument('--skip=%s', $skippedSuite);
+                }
+            } else {
+                $arguments->addOptionalArgument('--skip=%s', $config['skip_suites']);
+            }
+        }
         $process = $this->processBuilder->buildProcess($arguments);
         $process->run();
 
